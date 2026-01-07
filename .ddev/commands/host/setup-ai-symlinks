@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+## Description: Sets up AI module dev environment with symlinks
+## Usage: setup-ai-symlinks
+## Example: "ddev setup-ai-symlinks"
+## ExecRaw: true
+
+if [ -d "modules/ai" ]; then
+  echo "AI module already cloned, skipping..."
+else
+  echo "Cloning the AI module from Drupal.org repository..."
+  mkdir -p modules
+  cd modules && git clone git@git.drupal.org:project/ai.git && cd ai && git checkout 2.0.x && cd ../..
+fi
+
+echo "Removing the current contrib version of AI module..."
+ddev exec "rm -rf web/modules/contrib/ai"
+
+echo "Setting up symlink for AI module..."
+ddev exec "ln -sf /var/www/html/modules/ai web/modules/contrib/ai"
+
+echo "Clearing cache..."
+ddev drush cr
+
+echo "Done! AI module dev environment is ready."
+echo "The AI module is now symlinked from modules/ai to web/modules/contrib/ai"
+
