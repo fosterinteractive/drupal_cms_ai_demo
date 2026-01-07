@@ -1,0 +1,85 @@
+<!-- OPENSPEC:START -->
+# OpenSpec Instructions
+
+These instructions are for AI assistants working in this project.
+
+Always open `@/openspec/AGENTS.md` when the request:
+- Mentions planning or proposals (words like proposal, spec, change, plan)
+- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
+- Sounds ambiguous and you need the authoritative spec before coding
+
+Use `@/openspec/AGENTS.md` to learn:
+- How to create and apply change proposals
+- Spec format and conventions
+- Project structure and guidelines
+
+Keep this managed block so 'openspec update' can refresh the instructions.
+
+<!-- OPENSPEC:END -->
+
+# Drupal Development Guidance
+
+## Local Environment
+
+Drupal is installed locally using DDEV.
+
+## Build/Lint/Test Commands
+- **Build**: `composer install`
+- **Install**: `ddev drush site:install --existing-config`
+- **Lint**:
+  - If the project has a `/phpcs.xml` or `/phpcs.xml.dist`: `phpcs`
+  - Otherwise: `phpcs --standard=Drupal path/to/test`
+- **Static Analysis**:
+  - If the project has a `/phpstan.neon` or `phpstan.neon.dist`: `phpstan`
+  - Otherwise: `phpstan analyse --level 6 path/to/test`
+- **Run Single Test**:
+  - If the project has a `/phpunit.xml` or `/phpunit.xml.dist`: `phpunit --filter Test path/to/test`
+  - Otherwise: `phpunit -c [web-root]/core/phpunit.xml.dist --filter Test path/to/test`
+
+## Configuration Management
+- **Export configuration**: `ddev drush config:export -y`
+- **Import configuration**: `ddev drush config:import -y`
+- **Import partial configuration**: E.g. to reset to a module's install config `ddev drush config:import --partial --source=[path-to-module/config/install`
+- **Verify configuration**: `ddev drush config:export --diff`
+- **View config details**: `ddev drush config:get [config.name]`
+- **Change config value**: `ddev drush config:set [config.name] [key] [value]`
+- **Install from config**: `ddev drush site:install --existing-config`
+- **Get the config sync directory**: `ddev drush status --field=config-sync`
+
+## Development Commands
+- **List available modules**: `ddev drush pm:list [--filter=FILTER]`
+- **List enabled modules**: `ddev drush pm:list --status=enabled [--filter=FILTER]`
+- **Download a Drupal module**: `composer require drupal/[module_name]`
+- **Install a Drupal module**: `ddev drush en [module_name]`
+- **Clear cache**: `ddev drush cache:rebuild`
+- **Inspect logs**: `ddev drush watchdog:show --count=20`
+- **Delete logs**: `ddev drush watchdog:delete all`
+- **Run cron**: `ddev drush cron`
+- **Show status**: `ddev drush status`
+
+## Entity Management
+- **View fields on entity**: `ddev drush field:info [entity_type] [bundle]`
+
+## Best Practices
+- If making configuration changes to a module's config/install, these should also be applied to active configuration
+- Always export configuration after making changes
+- Check configuration diffs before importing
+- If a module provides install configuration, this should be done via `config/install` not `hook_install`
+- Attempt to use contrib modules for functionality, rather than replicating in a custom module
+- If phpcs/phpstan/phpunit are not available, they should be installed by `composer require --dev drupal/core-dev`
+
+## Code Style Guidelines
+- **PHP Version**: 8.3+ compatibility required
+- **Coding Standard**: Drupal coding standards
+- **Indentation**: 2 spaces, no tabs
+- **Line Length**: 120 characters maximum
+- **Comment**: 80 characters maximum line length, always finishing with a full stop
+- **Namespaces**: PSR-4 standard, `Drupal\{module_name}`
+- **Types**: Strict typing with PHP 8 features, union types when needed
+- **Documentation**: Required for classes and methods with PHPDoc
+- **Class Structure**: Properties before methods, dependency injection via constructor
+- **Naming**: CamelCase for classes/methods/properties, snake_case for variables, ALL_CAPS for constants
+- **Error Handling**: Specific exception types with `@throws` annotations, meaningful messages
+- **Plugins**: Follow Drupal plugin conventions with attributes for definition
+
+When working in this codebase, prioritize adherence to Drupal patterns and conventions.
