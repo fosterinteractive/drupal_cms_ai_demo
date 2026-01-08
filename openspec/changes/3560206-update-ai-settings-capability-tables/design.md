@@ -79,21 +79,49 @@ Proposed sectioned layout with tables:
 
 ## Provider Metadata Schema
 
-Contrib AI provider modules can optionally provide model pricing/documentation URLs via a YAML metadata file. The AI Settings form reads this metadata to populate the Info column.
+### Registry-Based Architecture
 
-**Suggested file**: `[provider_module]/config/ai_provider_info.yml` (or similar convention)
+The AI module maintains a **central provider registry** YAML file listing all known AI provider modules with default metadata. Contrib provider modules can optionally override this with their own metadata file.
 
-**Example schema**:
+**Registry file**: `modules/ai/config/ai_provider_registry.yml`
+
+**Example registry**:
 ```yaml
-# ai_provider_info.yml
+# ai_provider_registry.yml - Central registry in AI module
 
-# Date this metadata was last verified/updated (ISO 8601)
-updated: '2025-01-07'
+providers:
+  ai_provider_openai:
+    label: 'OpenAI'
+    project_url: 'https://www.drupal.org/project/ai_provider_openai'
+    info_url: 'https://platform.openai.com/docs/pricing'
+    updated: '2025-01-07'
+    
+  ai_provider_anthropic:
+    label: 'Anthropic'
+    project_url: 'https://www.drupal.org/project/ai_provider_anthropic'
+    info_url: 'https://www.anthropic.com/pricing'
+    updated: '2025-01-07'
+    
+  ai_provider_elevenlabs:
+    label: 'ElevenLabs'
+    project_url: 'https://www.drupal.org/project/ai_provider_elevenlabs'
+    info_url: 'https://elevenlabs.io/pricing'
+    updated: '2025-01-07'
+```
 
-# Default info URL for all models (provider pricing/docs page)
+**Override file** (optional): `[provider_module]/ai_provider_info.yml`
+
+**Example override** (in contrib module):
+```yaml
+# ai_provider_openai/ai_provider_info.yml - Provider-specific overrides
+
+# Override default info URL
 info_url: 'https://platform.openai.com/docs/pricing'
 
-# Model-specific overrides (optional - use when model has dedicated docs page)
+# Update timestamp
+updated: '2025-01-07'
+
+# Model-specific metadata
 models:
   gpt-4o:
     info_url: 'https://platform.openai.com/docs/models/gpt-4o'
@@ -101,32 +129,119 @@ models:
     info_url: 'https://platform.openai.com/docs/models/gpt-4o-mini'
   gpt-4-turbo:
     info_url: 'https://platform.openai.com/docs/models/gpt-4-turbo'
-    eol: '2025-12-31'  # Optional: end-of-life date when model stops working
+    eol: '2025-12-31'  # Optional: end-of-life date
   text-embedding-ada-002:
     eol: '2025-06-01'  # Model being deprecated
 ```
 
-**Schema fields**:
-| Field | Level | Required | Description |
-|-------|-------|----------|-------------|
-| `updated` | Provider | Recommended | ISO 8601 date when metadata was last verified |
-| `info_url` | Provider | Optional | Default pricing/docs URL for all models |
-| `info_url` | Model | Optional | Override URL for specific model |
-| `eol` | Model | Optional | ISO 8601 date when model will stop working |
+### Schema Fields
 
-**Behavior**:
-- If provider has no metadata file: Info column shows blank
-- If provider has top-level `info_url`: Use as default for all models
-- If specific model has `info_url`: Override the provider default
-- If model has `eol` date: Display warning indicator in UI (future enhancement)
-- The `updated` date helps administrators assess if pricing info may be stale
+**Registry level** (`ai_provider_registry.yml`):
+| Field | Required | Description |
+|-------|----------|-------------|
+| `label` | Yes | Human-readable provider name |
+| `project_url` | Yes | Drupal.org project page (for "Additional Capabilities" links) |
+| `info_url` | Optional | Default pricing/docs URL for all models |
+| `updated` | Recommended | ISO 8601 date when metadata was last verified |
+
+**Provider override level** (`ai_provider_info.yml`):
+| Field | Required | Description |
+|-------|----------|-------------|
+| `info_url` | Optional | Override default pricing/docs URL |
+| `updated` | Optional | Override update timestamp |
+| `models` | Optional | Per-model metadata overrides |
+
+**Model level** (within `models`):
+| Field | Required | Description |
+|-------|----------|-------------|
+| `info_url` | Optional | Model-specific pricing/docs URL |
+| `eol` | Optional | ISO 8601 date when model will stop working |
+
+### Merge Behavior
+
+1. **Load registry defaults** from `ai_provider_registry.yml`
+2. **Check for provider override** at `[provider_module]/ai_provider_info.yml`
+3. **Merge strategy**:
+   - Provider-level fields: Override replaces default
+   - Model-level fields: Override is additive (registry doesn't define models)
+4. **Fallback chain**:
+   - Model-specific `info_url` → Provider `info_url` → Registry `info_url` → blank
+
+### "Additional Capabilities" Section
+
+When rendering uninstalled capabilities, use `project_url` from registry to create installation links:
+
+| Capability | Available Providers |
+|------------|---------------------|
+| **Text to Image** | Install: [ai_provider_openai](link), [ai_provider_stability](link) |
 
 This approach:
-- Requires no breaking changes to provider plugin interface
-- Allows incremental adoption by contrib modules
-- Keeps pricing/docs URLs maintainable separate from PHP code
-- Provides transparency on data freshness via `updated` field
-- Enables proactive model deprecation warnings via `eol` field
+- **Centralized defaults**: AI module maintains registry without depending on contrib
+- **Incremental overrides**: Contrib modules only add metadata when needed
+- **"Additional Capabilities" support**: Registry provides `project_url` for uninstalled providers
+- **No breaking changes**: Provider plugin interface unchanged
+- **Future-proof**: EOL warnings can be added later without schema changes
+
+## Implementation Notes
+
+### "Additional Capabilities" Rendering
+
+Capabilities without installed providers display in a simplified table showing which provider modules could be installed:
+
+| Capability | Available Providers |
+|------------|---------------------|
+| **Text to Image** | Install: [ai_provider_openai](drupal.org link), [ai_provider_stability](drupal.org link) |
+
+- Links use `project_url` from registry (`ai_provider_registry.yml`)
+- Links open in new tab with appropriate aria-labels
+- No Provider/Model/Info columns (capabilities aren't configurable until provider installed)
+
+### Capability Categorization Logic
+
+Capabilities are categorized into sections based on provider availability:
+
+1. **Check installed providers**: Use `ProviderPluginManager::getDefinitions()` to get installed providers
+2. **For each capability type**: Check if `isUsable()` returns true for any installed provider
+3. **Categorize**:
+   - If **embeddings** capability → "Vector Data Capabilities" section
+   - If **has installed provider** → "AI Capabilities from Installed Providers" section  
+   - If **no installed provider** → "Additional AI Capabilities" section (use registry to show available providers)
+
+### Vector Data Capabilities Section
+
+Currently, embeddings and VDB provider are in the main capabilities list. This change **moves** them to a separate "Vector Data Capabilities" section:
+
+**Moved items**:
+- Embeddings capability (provider/model dropdowns)
+- VDB provider dropdown (existing separate fieldset)
+
+**Rationale**: Vector databases are infrastructure (storage) distinct from AI inference (computation). Separating them reduces cognitive load and groups related concerns.
+
+### Form Element Naming
+
+Form element names/IDs will **remain unchanged** to maintain backward compatibility:
+- `operation__embeddings` (still exists, just rendered in different section)
+- `model__embeddings` (still exists)
+- `default_vdb_provider` (still exists)
+
+This ensures existing form alters, JavaScript, and automated tests continue to work.
+
+### EOL Warnings
+
+The `eol` field is included in the schema but **deferred for future implementation**:
+- Metadata files can include `eol` dates now
+- UI will ignore them (no warnings displayed)
+- Future enhancement can add visual indicators without schema changes
+
+### Testing Strategy
+
+Automated tests will be added for:
+- **Form structure**: PHPUnit test verifying table elements exist
+- **AJAX callbacks**: Functional test for model dropdown updates
+- **Metadata loading**: Unit test for registry merge logic
+- **Section categorization**: Test capability routing to correct sections
+
+Manual QA checkpoints verify visual/UX aspects not covered by automated tests.
 
 ## Non-Goals
 
