@@ -50,18 +50,31 @@ Proposed sectioned layout with tables:
 
 ### Vector Data Capabilities
 
-*Vector databases store embeddings for semantic search and retrieval. This is infrastructure configuration separate from AI inference.*
+*Embedding providers allow text & media to be converted to a vector format, which is stored in a vector database (Eg Pinecone, Milvus). This enables AI tools to more easily understand your website's content, which is useful for features such as semantic search, chatbots, or AI content reviews.*
 
-| Capability | Provider | Model | Info |
-|------------|----------|-------|------|
+#### Embedding Providers
+
+**When no embedding providers installed:**
+> Install: OpenAI, Azure, Ollama, AWS Bedrock, Huggingface, Vertex AI, Fireworks AI, LMStudio
+*(Each name links to drupal.org project page)*
+
+**When embedding providers installed:**
+
+| AI Model Capability | Provider | Default Model | Info |
+|---------------------|----------|---------------|------|
 | **Embeddings** | `[OpenAI ▼]` | `[text-embedding-3-small ▼]` | [i] |
-| *Generate vector representations for text* | | | |
 
-**Vector Database Provider**
+#### Vector Database (VDB) Providers
 
-| Provider | Status |
-|----------|--------|
-| `[Pinecone ▼]` | Connected |
+**When no VDB providers installed:**
+> Install: Milvus, Pinecone, PostgreSQL, SQLite
+*(Each name links to drupal.org project page)*
+
+**When VDB providers installed:**
+
+| AI Model Capability | VDB Provider | Database | Info |
+|---------------------|--------------|----------|------|
+| **Vector Database** | `[Pinecone ▼]` | Pinecone | [i] |
 
 ---
 
@@ -209,13 +222,59 @@ Capabilities are categorized into sections based on provider availability:
 
 ### Vector Data Capabilities Section
 
-Currently, embeddings and VDB provider are in the main capabilities list. This change **moves** them to a separate "Vector Data Capabilities" section:
+Currently, embeddings and VDB provider are in the main capabilities list. This change **moves** them to a separate "Vector Data Capabilities" section with two subsections:
 
-**Moved items**:
-- Embeddings capability (provider/model dropdowns)
-- VDB provider dropdown (existing separate fieldset)
+**Section structure**:
+- **Embedding Providers** (h2 subsection)
+  - Shows install links when no embedding-capable providers installed
+  - Shows capability table with Provider/Default Model/Info columns when providers available
+- **Vector Database (VDB) Providers** (h2 subsection)
+  - Shows install links when no VDB providers installed
+  - Shows capability table with VDB Provider/Database/Info columns when providers available
 
-**Rationale**: Vector databases are infrastructure (storage) distinct from AI inference (computation). Separating them reduces cognitive load and groups related concerns.
+**Empty state behavior**:
+- Tables are **hidden** when no providers installed (not shown with "n/a" values)
+- Install links list specific providers that support the capability
+- Each provider name links to its drupal.org project page
+
+**Rationale**: Vector databases are infrastructure (storage) distinct from AI inference (computation). Separating them reduces cognitive load and groups related concerns. The empty states guide users to install appropriate modules.
+
+### Empty State Provider Lists
+
+When sections have no installed providers, they display curated lists of available providers with links:
+
+**Embedding Providers** (providers supporting `embeddings` capability):
+- OpenAI (`ai_provider_openai`)
+- Azure (`ai_provider_azure`)
+- Ollama (`ai_provider_ollama`)
+- AWS Bedrock (`ai_provider_aws_bedrock`)
+- Huggingface (`ai_provider_huggingface`)
+- Vertex AI (`ai_provider_google_vertex`)
+- Fireworks AI (`fireworksai`)
+- LMStudio (`ai_provider_lmstudio`)
+
+**VDB Providers**:
+- Milvus (`ai_vdb_provider_milvus`)
+- Pinecone (`ai_vdb_provider_pinecone`)
+- PostgreSQL (`ai_vdb_provider_postgres`)
+- SQLite (`ai_vdb_provider_sqlite`)
+
+These lists are hardcoded in `AiSettingsForm` methods `buildEmbeddingProviderLinks()` and `buildVdbProviderLinks()`. Links open in new tabs with `rel="noopener noreferrer"`.
+
+### Provider Registry ID Corrections
+
+The central registry (`ai_provider_registry.yml`) was updated to use correct drupal.org project IDs:
+
+| Old ID | Correct ID |
+|--------|------------|
+| `ai_provider_elevenlabs` | `elevenlabs` |
+| `ai_provider_google` | `gemini_provider` |
+| `ai_provider_stability` | `ai_provider_dreamstudio` |
+| `ai_provider_aws` | `ai_provider_aws_bedrock` |
+| `ai_provider_replicate` | `replicate` |
+| `ai_vdb_provider_postgresql` | `ai_vdb_provider_postgres` |
+
+The `ai_vdb_provider_azure` entry was removed (project does not exist).
 
 ### Form Element Naming
 
