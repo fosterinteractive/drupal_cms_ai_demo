@@ -1,5 +1,59 @@
 # Changelog
 
+## 2026-01-08: Fix Info Links Not Appearing in Settings Form
+
+### Problem
+
+The "Info" column in the AI Settings form was empty even when a provider like OpenAI was selected. The `[i]` pricing/documentation links were not showing.
+
+### Root Cause
+
+The registry file `ai_provider_registry.yml` used **module names** as keys (e.g., `ai_provider_openai`), but the form passes **plugin IDs** (e.g., `openai`) to the `AiProviderMetadataLoader::getInfoUrl()` method. This mismatch caused the lookup to fail.
+
+### Solution
+
+1. **Changed registry keys from module names to plugin IDs**
+   - `ai_provider_openai` → `openai`
+   - `ai_provider_anthropic` → `anthropic`
+   - etc.
+
+2. **Added `module` field to each registry entry** for override lookup
+   - The `loadProviderOverride()` method needs the module name to find `ai_provider_info.yml` files
+
+3. **Updated `AiProviderMetadataLoader::loadProviderOverride()`** to use the new `module` field
+
+### Files Changed
+
+- `modules/ai/config/ai_provider_registry.yml` - Restructured with plugin IDs as keys and added `module` field
+- `modules/ai/src/Service/AiProviderMetadataLoader.php` - Updated to use `module` field for override lookup
+
+### Registry Changes
+
+Also updated the registry to match the official provider matrix:
+
+#### Providers Added (5)
+
+| Plugin ID | Label | Module | Info URL |
+|-----------|-------|--------|----------|
+| `amazeeio` | amazee.ai | ai_provider_amazeeio | https://www.amazee.ai/pricing |
+| `docker` | Docker Model Runner | ai_provider_docker | https://docs.docker.com/model-runner/ |
+| `xai` | xAI (Grok) | ai_provider_x | https://x.ai/api |
+| `auphonic` | Auphonic | auphonic | https://auphonic.com/pricing |
+| `deepgram` | Deepgram | deepgram | https://deepgram.com/pricing |
+
+#### Providers Removed (2)
+
+| Provider | Reason |
+|----------|--------|
+| `ai_provider_cohere` | Not listed in official provider matrix |
+| `replicate` | Wrong project - drupal.org/project/replicate is an entity cloning module |
+
+### Note
+
+The `modules/` directory is gitignored in this repository. These changes should be applied to the upstream AI module repository.
+
+---
+
 ## 2026-01-07: Update Capability Descriptions and Section Headings
 
 ### Changes
