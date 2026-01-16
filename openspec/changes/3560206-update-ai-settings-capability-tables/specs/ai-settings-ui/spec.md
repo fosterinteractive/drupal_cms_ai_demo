@@ -28,12 +28,13 @@ The AI Settings page SHALL be organized into distinct sections with headings and
 - **AND** help text explains that vector databases are infrastructure distinct from AI inference
 
 ### Requirement: Table-Based Capability Layout
-Each section SHALL display its capabilities in a table format with columns for Capability, Provider, Model, and Info, replacing the current vertical fieldset layout.
+Each section SHALL display its capabilities in a table format with columns for Capability, Provider, Model, and Info, replacing the current vertical fieldset layout. Capabilities SHALL be sorted alphabetically by label within each section.
 
 #### Scenario: Each section displays capabilities in table format
 - **WHEN** an administrator views any capability section
 - **THEN** they see a table with columns: Capability, Provider, Model, Info
 - **AND** each row shows the capability name/description, provider dropdown, model dropdown, and info link
+- **AND** capabilities are sorted alphabetically by their label (e.g., "Chat" before "Chat with Complex JSON" before "Moderation")
 
 #### Scenario: Table maintains AJAX model loading
 - **WHEN** an administrator changes the provider selection in a table row

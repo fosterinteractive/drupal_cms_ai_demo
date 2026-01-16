@@ -1,5 +1,52 @@
 # Changelog
 
+## 2026-01-15: Add Alphabetical Sorting to Capability Sections
+
+### Change
+
+Added alphabetical sorting to all three capability sections on the AI Settings page for consistent, predictable ordering.
+
+### Implementation
+
+Added sorting in `categorizeCapabilities()` method after capabilities are categorized into sections:
+
+```php
+// Sort each section alphabetically by label.
+$sortByLabel = fn($a, $b) => strcasecmp((string) $a['label'], (string) $b['label']);
+usort($categorized[self::SECTION_INSTALLED], $sortByLabel);
+usort($categorized[self::SECTION_ADDITIONAL], $sortByLabel);
+usort($categorized[self::SECTION_VECTOR], $sortByLabel);
+```
+
+### Files Changed
+
+- `modules/ai/src/Form/AiSettingsForm.php`
+  - Lines 180-184: Added alphabetical sorting for all three sections
+
+### Result
+
+**AI Capabilities from Installed Providers** (sorted):
+1. Chat
+2. Chat with Complex JSON
+3. Chat with Image Vision
+4. Chat with Structured Response
+5. Chat with Tools/Function Calling
+6. Moderation
+7. Speech To Text
+8. Text To Image
+9. Text To Speech
+10. Translate Text
+
+**Additional AI Capabilities** (sorted):
+1. Audio to Audio
+2. Image and Audio to Video
+3. Image Classification
+4. Image to Image
+5. Image to Video
+6. Speech to Speech
+
+---
+
 ## 2026-01-08: Fix Info Links Not Appearing in Settings Form
 
 ### Problem

@@ -11,7 +11,7 @@ Screenshots captured during QA testing of the AI Settings page reorganization (I
 
 Verified:
 - "AI Capabilities from Installed Providers" section shows empty state with link to AI Provider documentation
-- "Vector Data Capabilities" section with two h4 subsections:
+- "Vector Data Capabilities" section with two h2 subsections:
   - **Embedding Providers**: Shows install links (OpenAI, Azure, Ollama, AWS Bedrock, Huggingface, Vertex AI, Fireworks AI, LMStudio)
   - **Vector Database (VDB) Providers**: Shows install links (Milvus, Pinecone, PostgreSQL, SQLite)
 - No empty tables displayed - only install prompts with provider links

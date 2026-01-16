@@ -20,18 +20,22 @@ Proposed sectioned layout with tables:
 
 *Configure default providers and models for AI capabilities. These providers are installed and ready to use.*
 
+*(Capabilities sorted alphabetically by label)*
+
 | Capability | Provider | Model | Info |
 |------------|----------|-------|------|
 | **Chat** | `[OpenAI ▼]` | `[gpt-4o ▼]` | [i] |
-| *Generate conversational responses* | | | |
-| **Chat with Image Vision** | `[OpenAI ▼]` | `[gpt-4o ▼]` | [i] |
-| *Analyze images within conversation* | | | |
+| *Have back-and-forth conversations with AI* | | | |
 | **Chat with Complex JSON** | `[OpenAI ▼]` | `[gpt-4o ▼]` | [i] |
-| *Produce structured JSON outputs* | | | |
-| **Text to Speech** | `[ElevenLabs ▼]` | `[eleven_multilingual_v2 ▼]` | [i] |
-| *Convert text to audio* | | | |
+| *Get AI responses formatted as valid JSON* | | | |
+| **Chat with Image Vision** | `[OpenAI ▼]` | `[gpt-4o ▼]` | [i] |
+| *Send images to AI and analyze them* | | | |
+| **Moderation** | `[OpenAI ▼]` | `[omni-moderation-latest ▼]` | [i] |
+| *Detect and filter harmful content* | | | |
 | **Speech to Text** | `[OpenAI ▼]` | `[whisper-1 ▼]` | [i] |
-| *Transcribe audio to text* | | | |
+| *Transcribe spoken audio into written text* | | | |
+| **Text to Speech** | `[OpenAI ▼]` | `[tts-1-hd ▼]` | [i] |
+| *Convert written text into spoken audio* | | | |
 
 ---
 
@@ -39,12 +43,18 @@ Proposed sectioned layout with tables:
 
 *These capabilities require additional provider modules to be installed.*
 
+*(Capabilities sorted alphabetically by label)*
+
 | Capability | Available Providers |
 |------------|---------------------|
-| **Text to Image** | Install: `ai_provider_openai`, `ai_provider_stability` |
+| **Audio to Audio** | Install: (check AI module homepage) |
+| *Transform audio by changing voice or quality* | |
+| **Image Classification** | Install: `ai_provider_huggingface` |
+| *Identify and categorize image content* | |
+| **Image to Image** | Install: `ai_provider_dreamstudio` |
+| *Transform images with AI-powered edits* | |
+| **Text to Image** | Install: `ai_provider_openai`, `ai_provider_dreamstudio` |
 | *Generate images from text prompts* | |
-| **Moderation** | Install: `ai_provider_openai` |
-| *Content moderation and safety filtering* | |
 
 ---
 
@@ -86,6 +96,7 @@ Proposed sectioned layout with tables:
 ## Decisions
 
 - **Table over fieldsets**: Tables provide better visual alignment and scannability for comparing provider/model selections across capabilities
+- **Alphabetical sorting**: Capabilities within each section are sorted alphabetically by label for consistent, predictable ordering
 - **Info column**: External link icon only (no text label) to keep table compact; tooltip or aria-label provides context
 - **Description placement**: Below capability name in same cell, styled as helper text (consistent with Drupal form patterns)
 - **Empty info links**: Simply omit the icon when provider has no URL configured (graceful degradation)
