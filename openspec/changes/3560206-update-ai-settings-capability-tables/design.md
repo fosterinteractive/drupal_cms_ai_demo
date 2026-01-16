@@ -302,6 +302,54 @@ Automated tests will be added for:
 
 Manual QA checkpoints verify visual/UX aspects not covered by automated tests.
 
+### Dynamic Model Info Links (Client-Side JavaScript)
+
+When a provider is selected via AJAX, the model dropdown is dynamically loaded. However, Drupal's Form API `#ajax` handlers are not automatically re-attached to elements replaced via `ReplaceCommand`. This means model selection changes would not trigger server-side AJAX callbacks to update the info links.
+
+**Solution**: A client-side JavaScript behavior handles model dropdown changes and dynamically updates info links.
+
+**Implementation files**:
+- `modules/ai/assets/js/ai_settings_form.js` - Drupal behavior for model selection handling
+- `modules/ai/ai.libraries.yml` - Library definition (`ai/ai_settings_form`)
+
+**How it works**:
+
+1. **Data attribute**: When a provider is selected, the AJAX callback adds a `data-model-url-pattern` attribute to the info cell containing the URL pattern (e.g., `https://platform.openai.com/docs/models/{model}`)
+
+2. **JavaScript behavior**: Uses `Drupal.behaviors` with `once()` pattern to attach change listeners to model dropdowns
+
+3. **Dynamic URL construction**: When model selection changes, JavaScript replaces `{model}` placeholder with the selected model ID
+
+4. **DOM manipulation**: Creates/updates the model info link with proper accessibility attributes (`target="_blank"`, `rel="noopener noreferrer"`, `aria-label`)
+
+**Code pattern** (follows Drupal best practices):
+```javascript
+(function (Drupal, once) {
+  'use strict';
+
+  Drupal.behaviors.aiSettingsModelSelect = {
+    attach: function (context) {
+      once('ai-settings-model', 'select[name^="model__"]', context).forEach(function (select) {
+        select.addEventListener('change', function () {
+          // Get model URL pattern from data attribute
+          // Construct URL and update/create info link
+        });
+      });
+    }
+  };
+})(Drupal, once);
+```
+
+**Why this approach**:
+- Follows Drupal's recommended `Drupal.behaviors` + `once()` pattern for AJAX content
+- Works with dynamically replaced form elements
+- Avoids complex server-side workarounds
+- Provides immediate user feedback without additional server round-trips
+
+**New service method**: `AiProviderMetadataLoader::getModelInfoUrlPattern(string $providerId): ?string`
+- Extracts URL pattern from provider's model metadata
+- Returns pattern like `https://platform.openai.com/docs/models/{model}` or NULL
+
 ## Non-Goals
 
 - Custom styling or theming (use Drupal Claro/Gin admin defaults)

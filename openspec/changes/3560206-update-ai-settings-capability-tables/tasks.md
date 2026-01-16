@@ -21,6 +21,17 @@
 
 ---
 
+## 2.5 Dynamic Model Info Links (Client-Side JavaScript)
+- [x] 2.5.1 Create `ai_settings_form.js` with Drupal behavior using `once()` pattern to handle model dropdown changes
+- [x] 2.5.2 Add `getModelInfoUrlPattern()` method to `AiProviderMetadataLoader` service to extract URL patterns from registry
+- [x] 2.5.3 Modify `buildCapabilityTableRow()` and `loadModels()` to add `data-model-url-pattern` attribute to info cells
+- [x] 2.5.4 Add `ai_settings_form` library definition to `ai.libraries.yml`
+- [x] 2.5.5 Ensure JavaScript dynamically creates/updates model info links with proper accessibility attributes
+
+**QA Checkpoint 2.5**: Verify model info links appear when selecting models on AJAX-loaded provider dropdowns
+
+---
+
 ## 3. Implement Sectioned Page Organization
 - [x] 3.1 Create "AI Capabilities from Installed Providers" section with heading and help text
 - [x] 3.2 Create "Additional AI Capabilities" section showing capabilities without installed providers
