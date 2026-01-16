@@ -1,4 +1,8 @@
 .DS_Store
+*.swp
+*.swo
+*~
+.claude/settings.local.json
 /.devpanel/dumps/
 /.devpanel/salt.txt
 /.editorconfig
